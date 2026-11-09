@@ -27,7 +27,7 @@ This is an unofficial, third-party tool, not affiliated with System76.
 ### Fedora (COPR)
 
 ```sh
-sudo dnf copr enable COPR_USER/cosmic-fullscreen-ws
+sudo dnf copr enable badman/cosmic-fullscreen-ws
 sudo dnf install fullscreen-ws                      # the service
 sudo dnf install cosmic-ext-applet-fullscreen-ws    # and/or the applet
 ```
