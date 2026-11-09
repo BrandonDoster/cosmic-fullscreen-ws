@@ -22,7 +22,7 @@ jobs:
       - name: Install tools
         run: dnf -y install git cargo rust rpm-build copr-cli gh
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check tag matches package versions
         if: startsWith(github.ref, 'refs/tags/v')
