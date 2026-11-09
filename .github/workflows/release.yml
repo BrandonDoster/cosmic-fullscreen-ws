@@ -1,0 +1,67 @@
+# On a version tag (v1.2.3): build both source RPMs, attach them to a GitHub
+# release, and submit them to COPR.
+#
+# Needs, in the repository settings (Settings > Secrets and variables > Actions):
+#   secret   COPR_CONFIG   contents of ~/.config/copr from https://copr.fedorainfracloud.org/api/
+#   variable COPR_PROJECT  e.g. "yourcoprname/cosmic-fullscreen-ws"
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:latest
+    steps:
+      - name: Install tools
+        run: dnf -y install git cargo rust rpm-build copr-cli gh
+
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches package versions
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for f in Cargo.toml applet/Cargo.toml; do
+            v=$(sed -n 's/^version = "\(.*\)"/\1/p' "$f" | head -1)
+            if [ "$v" != "$tag" ]; then
+              echo "::error::$f has version $v but the tag is v$tag"
+              exit 1
+            fi
+          done
+
+      - name: Build source RPMs
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          packaging/make-srpm.sh fullscreen-ws dist
+          packaging/make-srpm.sh cosmic-ext-applet-fullscreen-ws dist
+          ls -l dist
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.src.rpm \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes
+
+      - name: Submit to COPR
+        env:
+          COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+          COPR_PROJECT: ${{ vars.COPR_PROJECT }}
+        run: |
+          if [ -z "$COPR_CONFIG" ] || [ -z "$COPR_PROJECT" ]; then
+            echo "::warning::COPR_CONFIG or COPR_PROJECT not set, skipping COPR"
+            exit 0
+          fi
+          mkdir -p ~/.config
+          printf '%s\n' "$COPR_CONFIG" > ~/.config/copr
+          for srpm in dist/*.src.rpm; do
+            copr-cli build --nowait "$COPR_PROJECT" "$srpm"
+          done

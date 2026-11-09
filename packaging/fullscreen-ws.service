@@ -1,0 +1,15 @@
+[Unit]
+Description=Move fullscreen windows to their own COSMIC workspace
+Documentation=https://github.com/BrandonDoster/cosmic-fullscreen-ws
+PartOf=graphical-session.target
+After=graphical-session.target
+# Only meaningful in a COSMIC session; skip quietly elsewhere (GNOME, KDE, ...).
+ConditionEnvironment=XDG_CURRENT_DESKTOP=COSMIC
+
+[Service]
+ExecStart=/usr/bin/fullscreen-ws
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

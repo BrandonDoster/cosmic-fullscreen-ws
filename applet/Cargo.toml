@@ -1,0 +1,23 @@
+[package]
+name = "cosmic-ext-applet-fullscreen-ws"
+version = "0.1.0"
+edition = "2024"
+description = "COSMIC panel applet: give fullscreen windows their own workspace"
+license = "MIT"
+
+[dependencies]
+fullscreen-ws = { path = ".." }
+wayland-client = "0.31"
+libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false, features = [
+    "applet",
+    "applet-token",
+    "dbus-config",
+    "multi-window",
+    "tokio",
+    "wayland",
+    "winit",
+] }
+
+[profile.release]
+lto = "thin"
+strip = true

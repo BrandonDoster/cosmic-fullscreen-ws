@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Fullscreen Workspaces
+Comment=Give fullscreen and maximized windows their own workspace
+Type=Application
+Exec=cosmic-ext-applet-fullscreen-ws
+Terminal=false
+Categories=COSMIC;
+Keywords=COSMIC;Applet;Fullscreen;Workspace;
+Icon=view-fullscreen-symbolic
+StartupNotify=true
+NoDisplay=true
+X-CosmicApplet=true
+X-HostWaylandDisplay=true
+X-CosmicHoverPopup=Auto
